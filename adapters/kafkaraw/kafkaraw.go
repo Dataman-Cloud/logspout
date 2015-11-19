@@ -22,6 +22,7 @@ var topic string
 
 func NewKafkaRawAdapter(route *router.Route) (router.LogAdapter, error) {
 	topic = os.Getenv("TOPIC")
+	compressType := os.Getenv("COMPRESS_TYPE")
 	if topic == "" {
 		err := errors.New("not found kafka topic")
 		return nil, err
@@ -32,7 +33,13 @@ func NewKafkaRawAdapter(route *router.Route) (router.LogAdapter, error) {
 	}
 	_ = transport
 	config := kafka.NewConfig()
-	config.Producer.Compression = kafka.CompressionGZIP
+	if compressType == "gzip" {
+		config.Producer.Compression = kafka.CompressionGZIP
+	} else if compressType == "snappy" {
+		config.Producer.Compression = kafka.CompressionSnappy
+	} else {
+		config.Producer.Compression = kafka.CompressionNone
+	}
 	producer, err := kafka.NewSyncProducer([]string{route.Address}, config)
 	if err != nil {
 		return nil, err
@@ -77,7 +84,7 @@ func (a *RawAdapter) Stream(logstream chan *router.Message) {
 				utils.Hostname + " " +
 				cn + " " +
 				buf.String()
-			msg := &kafka.ProducerMessage{Topic: "test", Value: kafka.StringEncoder(logmsg)}
+			msg := &kafka.ProducerMessage{Topic: topic, Value: kafka.StringEncoder(logmsg)}
 			partition, offset, err := a.producer.SendMessage(msg)
 			_, _, _ = partition, offset, err
 		}

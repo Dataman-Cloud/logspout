@@ -15,4 +15,7 @@ docker run -d --env HURL="tcp://123.59.58.58:5002" --name="omega-logcollection" 
 支持推送向kafka
 ```
 如果server使用的kafka把连接地址改成kafka://x.x.x.x:9092,并且加入环境变量TOPIC=dataman-cloud加入自己的主题
+支持环境变量传入压缩方式，不穿默认不压缩
+COMPRESS_TYPE="gzip"
+COMPRESS_TYPE="snappy"
 ```
