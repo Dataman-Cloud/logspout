@@ -4,10 +4,11 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	_ "io/ioutil"
 	"log"
 	"net"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -19,15 +20,34 @@ var Hostname string
 var UserId string
 var ClusterId string
 
+func getPort(ports string) string {
+	reg := regexp.MustCompile("\\[|\\]")
+	strs := strings.Split(reg.ReplaceAllString(ports, ""), "-")
+	startPort, serr := strconv.Atoi(strs[0])
+	endPort, eerr := strconv.Atoi(strs[1])
+	if serr != nil || eerr != nil {
+		return "[]"
+	}
+	var port []string
+	for i := startPort; i <= endPort; i++ {
+		port = append(port, strconv.Itoa(i))
+	}
+	return "[" + strings.Join(port, ",") + "]"
+
+}
+
 type Message struct {
 	FrameWorks []struct {
 		Executors []struct {
 			Container string `json:"container"`
 			Tasks     []struct {
-				SlaveId string `json:"slave_id"`
-				State   string `json:"state"`
-				Name    string `json:"name"`
-				Id      string `json:"id"`
+				SlaveId   string `json:"slave_id"`
+				State     string `json:"state"`
+				Name      string `json:"name"`
+				Id        string `json:"id"`
+				Resources struct {
+					Ports string `json:"ports"`
+				} `json:"resources"`
 			} `json:"tasks"`
 		} `json:"executors"`
 	} `json:"frameworks"`
@@ -78,7 +98,9 @@ func GetMesosInfo() {
 						if len(ex.Tasks) > 0 {
 							for _, ts := range ex.Tasks {
 								mcn := "/mesos-" + ts.SlaveId + "." + ex.Container
-								mg[mcn] = ts.Name + " " + ts.Id
+								mg[mcn] = ts.Name + " " +
+									ts.Id + " " +
+									getPort(ts.Resources.Ports)
 							}
 						}
 					}
@@ -158,7 +180,7 @@ func getCnames() map[string]string {
 		ca := strings.Split(cnames, ",")
 		for _, cname := range ca {
 			rname := strings.Replace(cname, "/", "", 1)
-			cmap[cname] = rname + " " + rname
+			cmap[cname] = rname + " " + rname + " " + "[]"
 		}
 		return cmap
 	}
