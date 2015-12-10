@@ -4,13 +4,23 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/Jeffail/gabs"
 	log "github.com/cihub/seelog"
+	"github.com/fsouza/go-dockerclient"
+	"io/ioutil"
 	"net"
 	"os"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
+)
+
+const (
+	countFile = "/tmp/logspout/logspout.json"
 )
 
 var UUID string
@@ -19,6 +29,8 @@ var IP string
 var Hostname string
 var UserId string
 var ClusterId string
+var counter map[string]int64
+var counterlock sync.Mutex
 
 func getPort(ports string) string {
 	reg := regexp.MustCompile("\\[|\\]")
@@ -55,6 +67,8 @@ type Message struct {
 }
 
 func init() {
+	counterlock = sync.Mutex{}
+	loadCounter()
 	UUID = os.Getenv("HOST_ID")
 	if UUID == "" {
 		log.Error("cat't found uuid")
@@ -76,16 +90,18 @@ func init() {
 }
 
 func Run() {
+	mesoslock := &sync.Mutex{}
 	timer := time.NewTicker(5 * time.Second)
 	for {
 		select {
 		case <-timer.C:
-			GetMesosInfo()
+			getMesosInfo(mesoslock)
+			persistenCounter()
 		}
 	}
 }
 
-func GetMesosInfo() {
+func getMesosInfo(lock *sync.Mutex) {
 	data, err := HttpGet("http://" + IP + ":5051/slave(1)/state.json")
 	if err == nil {
 		mg := getCnames()
@@ -107,7 +123,9 @@ func GetMesosInfo() {
 				}
 			}
 		}
+		lock.Lock()
 		M1 = mg
+		lock.Unlock()
 	}
 	log.Debug("get mesos json: ", err, M1)
 }
@@ -188,11 +206,13 @@ func getCnames() map[string]string {
 	return nil
 }
 
-func SendMessage(cn, msg string) string {
+func SendMessage(cn, msg string, d *docker.Container) string {
+	counter[d.ID]++
 	t := time.Unix(time.Now().Unix(), 0)
 	timestr := t.Format("2006-01-02T15:04:05")
 	logmsg := strings.Replace(string(timestr), "\"", "", -1) + " " +
 		UserId + " " +
+		fmt.Sprint(counter[d.ID]) + " " +
 		ClusterId + " " +
 		UUID + " " +
 		IP + " " +
@@ -200,4 +220,51 @@ func SendMessage(cn, msg string) string {
 		cn + " " +
 		msg
 	return logmsg
+}
+
+func loadCounter() {
+	counter = make(map[string]int64)
+	buf, err := ioutil.ReadFile(countFile)
+	if err == nil {
+		json, err := gabs.ParseJSON(buf)
+		if err == nil {
+			m, err := json.ChildrenMap()
+			if err == nil {
+				for k, v := range m {
+					if reflect.TypeOf(v.Data()).String() == "float64" {
+						counter[k] = int64(v.Data().(float64))
+					}
+				}
+				log.Debug("load container counter: ", json)
+			} else {
+				log.Error("counter childrenmap err: ", err)
+			}
+		} else {
+			log.Error("counter str to json err: ", err)
+		}
+	} else {
+		log.Debug("not found counter file: ", err)
+	}
+}
+
+func persistenCounter() {
+	if len(counter) > 0 {
+		json := gabs.New()
+		counterlock.Lock()
+		for k, v := range counter {
+			json.Set(v, k)
+		}
+		counterlock.Unlock()
+		err := ioutil.WriteFile(countFile, json.Bytes(), 0x644)
+		if err != nil {
+			log.Error("persisten counter failed: ", err)
+		}
+	}
+}
+
+func DeleteCounter(id string) {
+	log.Debug("delete container counter: ", id)
+	counterlock.Lock()
+	delete(counter, id)
+	counterlock.Unlock()
 }

@@ -72,7 +72,7 @@ func (a *RawAdapter) Stream(logstream chan *router.Message) {
 			return
 		}
 		if cn := utils.M1[message.Container.Name]; cn != "" {
-			logmsg := utils.SendMessage(cn, buf.String())
+			logmsg := utils.SendMessage(cn, buf.String(), message.Container)
 			msg := &kafka.ProducerMessage{Topic: topic, Value: kafka.StringEncoder(logmsg)}
 			partition, offset, err := a.producer.SendMessage(msg)
 			_, _, _ = partition, offset, err

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/fsouza/go-dockerclient"
+	"github.com/gliderlabs/logspout/utils"
 )
 
 func init() {
@@ -167,6 +168,7 @@ func (p *LogsPump) update(event *docker.APIEvents) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	pump, pumping := p.pumps[normalID(event.ID)]
+	utils.DeleteCounter(event.ID)
 	if pumping {
 		for r, _ := range p.routes {
 			select {

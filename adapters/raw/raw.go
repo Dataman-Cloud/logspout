@@ -67,7 +67,7 @@ func (a *RawAdapter) Stream(logstream chan *router.Message) {
 		}
 
 		if cn := utils.M1[message.Container.Name]; cn != "" {
-			logmsg := utils.SendMessage(cn, buf.String())
+			logmsg := utils.SendMessage(cn, buf.String(), message.Container)
 			_, err = connection.Write([]byte(logmsg))
 			if err != nil {
 				log.Error("raw:", err, reflect.TypeOf(a.conn).String())

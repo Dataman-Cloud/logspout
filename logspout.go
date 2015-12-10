@@ -27,7 +27,6 @@ func main() {
 		fmt.Println(Version)
 		os.Exit(0)
 	}
-
 	fmt.Printf("# logspout %s by gliderlabs\n", Version)
 	fmt.Printf("# adapters: %s\n", strings.Join(router.AdapterFactories.Names(), " "))
 	fmt.Printf("# options : ")

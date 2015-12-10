@@ -14,6 +14,7 @@ mkdir -p /go/src/github.com/gliderlabs
 cp -r /src /go/src/github.com/gliderlabs/logspout
 cd /go/src/github.com/gliderlabs/logspout
 go get github.com/cihub/seelog
+go get github.com/Jeffail/gabs
 go get github.com/Shopify/sarama
 go get github.com/fsouza/go-dockerclient
 go get github.com/gorilla/mux
