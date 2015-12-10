@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"log"
+	log "github.com/cihub/seelog"
 	"log/syslog"
 	"net"
 	"os"
@@ -84,12 +84,12 @@ func (a *SyslogAdapter) Stream(logstream chan *router.Message) {
 		m := &SyslogMessage{message}
 		buf, err := m.Render(a.tmpl)
 		if err != nil {
-			log.Println("syslog:", err)
+			log.Error("syslog:", err)
 			return
 		}
 		_, err = a.conn.Write(buf)
 		if err != nil {
-			log.Println("syslog:", err)
+			log.Error("syslog:", err)
 			if reflect.TypeOf(a.conn).String() != "*net.UDPConn" {
 				return
 			}

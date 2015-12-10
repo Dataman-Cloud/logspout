@@ -7,6 +7,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	_ "github.com/gliderlabs/logspout/logger"
 	"github.com/gliderlabs/logspout/router"
 	"github.com/gliderlabs/logspout/utils"
 )

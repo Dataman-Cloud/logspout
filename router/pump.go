@@ -3,8 +3,8 @@ package router
 import (
 	"bufio"
 	"errors"
+	log "github.com/cihub/seelog"
 	"io"
-	"log"
 	"os"
 	"strings"
 	"sync"
@@ -32,13 +32,13 @@ func getopt(name, dfault string) string {
 
 func debug(v ...interface{}) {
 	if os.Getenv("DEBUG") != "" {
-		log.Println(v...)
+		log.Debug(v...)
 	}
 }
 
 func assert(err error, context string) {
 	if err != nil {
-		log.Fatal(context+": ", err)
+		log.Error(context+": ", err)
 	}
 }
 

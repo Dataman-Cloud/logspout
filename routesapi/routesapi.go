@@ -2,8 +2,8 @@ package routesapi
 
 import (
 	"encoding/json"
+	log "github.com/cihub/seelog"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/gliderlabs/logspout/router"
@@ -64,7 +64,7 @@ func RoutesAPI() http.Handler {
 func marshal(obj interface{}) []byte {
 	bytes, err := json.MarshalIndent(obj, "", "  ")
 	if err != nil {
-		log.Println("marshal:", err)
+		log.Debug("marshal:", err)
 	}
 	return bytes
 }

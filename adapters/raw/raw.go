@@ -3,7 +3,7 @@ package raw
 import (
 	"bytes"
 	"errors"
-	"log"
+	log "github.com/cihub/seelog"
 	"net"
 	"os"
 	"reflect"
@@ -62,14 +62,13 @@ func (a *RawAdapter) Stream(logstream chan *router.Message) {
 		buf := new(bytes.Buffer)
 		err := a.tmpl.Execute(buf, message)
 		if err != nil {
-			log.Println("raw:", err)
+			log.Debug("raw:", err)
 			return
 		}
 
 		if cn := utils.M1[message.Container.Name]; cn != "" {
 			t := time.Unix(time.Now().Unix(), 0)
 			timestr := t.Format("2006-01-02T15:04:05")
-			//logmsg := strings.Replace(string(timestr), "\"", "", -1) + " " + utils.UUID + " " + utils.IP + " " + utils.Hostname + " " + cn + " " + buf.String()
 			logmsg := strings.Replace(string(timestr), "\"", "", -1) + " " +
 				utils.UserId + " " +
 				utils.ClusterId + " " +
@@ -80,7 +79,7 @@ func (a *RawAdapter) Stream(logstream chan *router.Message) {
 				buf.String()
 			_, err = connection.Write([]byte(logmsg))
 			if err != nil {
-				log.Println("raw:", err, reflect.TypeOf(a.conn).String())
+				log.Error("raw:", err, reflect.TypeOf(a.conn).String())
 				/*if reflect.TypeOf(a.conn).String() != "*net.TCPConn"{
 					return
 				}*/
@@ -92,7 +91,7 @@ func (a *RawAdapter) Stream(logstream chan *router.Message) {
 
 func connPing() {
 	timer := time.NewTicker(2 * time.Second)
-	log.Println("ping tcp ......")
+	log.Debug("ping tcp ......")
 	for {
 		select {
 		case <-timer.C:
@@ -100,13 +99,13 @@ func connPing() {
 			if err != nil {
 				if netType == "tcp" {
 					conn, err := utils.ConnTCP(address)
-					log.Println("can connection tcp ", err)
+					log.Debug("can connection tcp ", err)
 					if err == nil {
 						connection = conn
 					}
 				} else if netType == "tls" {
 					conn, err := utils.ConnTLS(address)
-					log.Println("can connection tls ", err)
+					log.Debug("can connection tls ", err)
 					if err == nil {
 						connection = conn
 					}

@@ -3,7 +3,7 @@ package httpstream
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	log "github.com/cihub/seelog"
 	"net/http"
 	"os"
 	"strconv"
@@ -20,7 +20,7 @@ func init() {
 
 func debug(v ...interface{}) {
 	if os.Getenv("DEBUG") != "" {
-		log.Println(v...)
+		log.Debug(v...)
 	}
 }
 
@@ -90,7 +90,7 @@ func (c Colorizer) Get(key string) string {
 func marshal(obj interface{}) []byte {
 	bytes, err := json.MarshalIndent(obj, "", "  ")
 	if err != nil {
-		log.Println("marshal:", err)
+		log.Error("marshal:", err)
 	}
 	return bytes
 }

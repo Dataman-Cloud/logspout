@@ -3,7 +3,7 @@ package kafkaraw
 import (
 	"bytes"
 	"errors"
-	"log"
+	log "github.com/cihub/seelog"
 	"os"
 	"text/template"
 
@@ -70,7 +70,7 @@ func (a *RawAdapter) Stream(logstream chan *router.Message) {
 		buf := new(bytes.Buffer)
 		err := a.tmpl.Execute(buf, message)
 		if err != nil {
-			log.Println("raw:", err)
+			log.Error("raw:", err)
 			return
 		}
 		if cn := utils.M1[message.Container.Name]; cn != "" {

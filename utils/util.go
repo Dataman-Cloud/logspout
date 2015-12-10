@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"log"
+	log "github.com/cihub/seelog"
 	"net"
 	"os"
 	"regexp"
@@ -57,17 +57,17 @@ type Message struct {
 func init() {
 	UUID = os.Getenv("HOST_ID")
 	if UUID == "" {
-		log.Println("cat't found uuid")
+		log.Error("cat't found uuid")
 		os.Exit(0)
 	}
 	UserId = os.Getenv("USER_ID")
 	if UserId == "" {
-		log.Println("cat't found userid")
+		log.Error("cat't found userid")
 		os.Exit(0)
 	}
 	ClusterId = os.Getenv("CLUSTER_ID")
 	if ClusterId == "" {
-		log.Println("cat't found clusterid")
+		log.Error("cat't found clusterid")
 		os.Exit(0)
 	}
 	Hostname, _ = os.Hostname()
@@ -109,6 +109,7 @@ func GetMesosInfo() {
 		}
 		M1 = mg
 	}
+	log.Debug("get mesos json: ", err, M1)
 }
 
 func GetIp() (ip string, err error) {

@@ -4,8 +4,8 @@ import (
 	"crypto/sha1"
 	"errors"
 	"fmt"
+	log "github.com/cihub/seelog"
 	"io"
-	"log"
 	"net/url"
 	"os"
 	"strconv"
@@ -111,7 +111,6 @@ func (rm *RouteManager) Add(route *Route) error {
 	rm.Lock()
 	defer rm.Unlock()
 	factory, found := AdapterFactories.Lookup(route.AdapterType())
-	log.Println("==============", route.AdapterType())
 	if !found {
 		return errors.New("bad adapter: " + route.Adapter)
 	}
@@ -129,7 +128,7 @@ func (rm *RouteManager) Add(route *Route) error {
 	rm.routes[route.ID] = route
 	if rm.persistor != nil {
 		if err := rm.persistor.Add(route); err != nil {
-			log.Println("persistor:", err)
+			log.Debug("persistor:", err)
 		}
 	}
 	if rm.routing {

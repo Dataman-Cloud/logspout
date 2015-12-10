@@ -2,9 +2,9 @@ package router
 
 import (
 	"encoding/json"
+	log "github.com/cihub/seelog"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 )
@@ -61,7 +61,7 @@ func (fs RouteFileStore) Remove(id string) bool {
 func marshal(obj interface{}) []byte {
 	bytes, err := json.MarshalIndent(obj, "", "  ")
 	if err != nil {
-		log.Println("marshal:", err)
+		log.Error("marshal:", err)
 	}
 	return bytes
 }
