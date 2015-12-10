@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
-apk add --update go git mercurial
+apk add --update go git mercurial logrotate
+
+echo "*/2 * * * * /usr/sbin/logrotate /etc/logrotate.conf" >> /etc/crontabs/root
+cd /src && mv logrotate.conf /etc && mv start.sh /bin
 
 mkdir -p /go/src
 

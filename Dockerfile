@@ -1,5 +1,5 @@
 FROM gliderlabs/alpine:3.1
-ENTRYPOINT ["/bin/logspout", "tcp://123.59.58.58:5000"]
+#ENTRYPOINT ["/bin/logspout", "tcp://123.59.58.58:5000"]
 VOLUME /mnt/routes
 EXPOSE 8000
 
@@ -11,3 +11,4 @@ RUN cd /src && ./build.sh "$(cat VERSION)"
 
 ONBUILD COPY ./modules.go /src/modules.go
 ONBUILD RUN cd /src && ./build.sh "$(cat VERSION)-custom"
+ENTRYPOINT ["/bin/start.sh"]
