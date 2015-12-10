@@ -67,16 +67,7 @@ func (a *RawAdapter) Stream(logstream chan *router.Message) {
 		}
 
 		if cn := utils.M1[message.Container.Name]; cn != "" {
-			t := time.Unix(time.Now().Unix(), 0)
-			timestr := t.Format("2006-01-02T15:04:05")
-			logmsg := strings.Replace(string(timestr), "\"", "", -1) + " " +
-				utils.UserId + " " +
-				utils.ClusterId + " " +
-				utils.UUID + " " +
-				utils.IP + " " +
-				utils.Hostname + " " +
-				cn + " " +
-				buf.String()
+			logmsg := utils.SendMessage(cn, buf.String())
 			_, err = connection.Write([]byte(logmsg))
 			if err != nil {
 				log.Error("raw:", err, reflect.TypeOf(a.conn).String())

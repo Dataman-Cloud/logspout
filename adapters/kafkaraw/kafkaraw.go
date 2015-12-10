@@ -10,8 +10,6 @@ import (
 	kafka "github.com/Shopify/sarama"
 	"github.com/gliderlabs/logspout/router"
 	"github.com/gliderlabs/logspout/utils"
-	"strings"
-	"time"
 )
 
 func init() {
@@ -74,16 +72,7 @@ func (a *RawAdapter) Stream(logstream chan *router.Message) {
 			return
 		}
 		if cn := utils.M1[message.Container.Name]; cn != "" {
-			t := time.Unix(time.Now().Unix(), 0)
-			timestr := t.Format("2006-01-02T15:04:05")
-			logmsg := strings.Replace(string(timestr), "\"", "", -1) + " " +
-				utils.UserId + " " +
-				utils.ClusterId + " " +
-				utils.UUID + " " +
-				utils.IP + " " +
-				utils.Hostname + " " +
-				cn + " " +
-				buf.String()
+			logmsg := utils.SendMessage(cn, buf.String())
 			msg := &kafka.ProducerMessage{Topic: topic, Value: kafka.StringEncoder(logmsg)}
 			partition, offset, err := a.producer.SendMessage(msg)
 			_, _, _ = partition, offset, err

@@ -76,7 +76,7 @@ func init() {
 }
 
 func Run() {
-	timer := time.NewTicker(10 * time.Second)
+	timer := time.NewTicker(5 * time.Second)
 	for {
 		select {
 		case <-timer.C:
@@ -186,4 +186,18 @@ func getCnames() map[string]string {
 		return cmap
 	}
 	return nil
+}
+
+func SendMessage(cn, msg string) string {
+	t := time.Unix(time.Now().Unix(), 0)
+	timestr := t.Format("2006-01-02T15:04:05")
+	logmsg := strings.Replace(string(timestr), "\"", "", -1) + " " +
+		UserId + " " +
+		ClusterId + " " +
+		UUID + " " +
+		IP + " " +
+		Hostname + " " +
+		cn + " " +
+		msg
+	return logmsg
 }
