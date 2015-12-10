@@ -43,6 +43,7 @@ func NewRawAdapter(route *router.Route) (router.LogAdapter, error) {
 	if err != nil {
 		return nil, err
 	}
+	go connPing()
 	return &RawAdapter{
 		route: route,
 		conn:  conn,
@@ -57,7 +58,6 @@ type RawAdapter struct {
 }
 
 func (a *RawAdapter) Stream(logstream chan *router.Message) {
-	go connPing()
 	for message := range logstream {
 		buf := new(bytes.Buffer)
 		err := a.tmpl.Execute(buf, message)
@@ -92,6 +92,7 @@ func (a *RawAdapter) Stream(logstream chan *router.Message) {
 
 func connPing() {
 	timer := time.NewTicker(2 * time.Second)
+	log.Println("ping tcp ......")
 	for {
 		select {
 		case <-timer.C:
