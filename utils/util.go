@@ -208,9 +208,20 @@ func getCnames() map[string]string {
 
 func SendMessage(cn, msg string, d *docker.Container) string {
 	counter[d.ID]++
-	t := time.Unix(time.Now().Unix(), 0)
+	/*t := time.Unix(time.Now().Unix(), 0)
 	timestr := t.Format("2006-01-02T15:04:05")
 	logmsg := strings.Replace(string(timestr), "\"", "", -1) + " " +
+		UserId + " " +
+		fmt.Sprint(counter[d.ID]) + " " +
+		ClusterId + " " +
+		UUID + " " +
+		IP + " " +
+		Hostname + " " +
+		cn + " " +
+		msg*/
+	t := time.Now()
+	timestr := t.Format("2006-01-02T15:04:05.000Z")
+	logmsg := timestr + " " +
 		UserId + " " +
 		fmt.Sprint(counter[d.ID]) + " " +
 		ClusterId + " " +
@@ -262,9 +273,21 @@ func persistenCounter() {
 	}
 }
 
-func DeleteCounter(id string) {
-	log.Debug("delete container counter: ", id)
-	counterlock.Lock()
-	delete(counter, id)
-	counterlock.Unlock()
+func DeleteCounter(client *docker.Client) {
+	containers, err := client.ListContainers(docker.ListContainersOptions{})
+	if err == nil {
+		copycounter := counter
+		for _, container := range containers {
+			_, ok := copycounter[container.ID]
+			if ok {
+				delete(copycounter, container.ID)
+			}
+		}
+
+		counterlock.Lock()
+		for k, _ := range copycounter {
+			delete(counter, k)
+		}
+		counterlock.Unlock()
+	}
 }

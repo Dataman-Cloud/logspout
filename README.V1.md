@@ -19,3 +19,9 @@ docker run -d --env HURL="tcp://123.59.58.58:5002" --name="omega-logcollection" 
 COMPRESS_TYPE="gzip"
 COMPRESS_TYPE="snappy"
 ```
+##第三版
+```
+重构了日志模块日志放在docker里面的/var/log/logspout/目录下面
+支持了对于taskid日志条数计数功能，会定时把计数持久化到本地挂在目录：
+/tmp/logspout:/tmp/logspout
+```

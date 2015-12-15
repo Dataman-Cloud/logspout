@@ -168,7 +168,7 @@ func (p *LogsPump) update(event *docker.APIEvents) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	pump, pumping := p.pumps[normalID(event.ID)]
-	utils.DeleteCounter(event.ID)
+	utils.DeleteCounter(p.client)
 	if pumping {
 		for r, _ := range p.routes {
 			select {
