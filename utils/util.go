@@ -127,7 +127,7 @@ func getMesosInfo(lock *sync.Mutex) {
 		M1 = mg
 		lock.Unlock()
 	}
-	log.Debug("get mesos json: ", err, M1)
+	//log.Debug("get mesos json: ", err, M1)
 }
 
 func GetIp() (ip string, err error) {
@@ -203,24 +203,13 @@ func getCnames() map[string]string {
 		}
 		return cmap
 	}
-	return nil
+	return make(map[string]string)
 }
 
 func SendMessage(cn, msg string, d *docker.Container) string {
 	counter[d.ID]++
-	/*t := time.Unix(time.Now().Unix(), 0)
-	timestr := t.Format("2006-01-02T15:04:05")
-	logmsg := strings.Replace(string(timestr), "\"", "", -1) + " " +
-		UserId + " " +
-		fmt.Sprint(counter[d.ID]) + " " +
-		ClusterId + " " +
-		UUID + " " +
-		IP + " " +
-		Hostname + " " +
-		cn + " " +
-		msg*/
 	t := time.Now()
-	timestr := t.Format("2006-01-02T15:04:05.000Z")
+	timestr := t.Format("2006-01-02T15:04:05.895+08:00")
 	logmsg := timestr + " " +
 		UserId + " " +
 		fmt.Sprint(counter[d.ID]) + " " +
