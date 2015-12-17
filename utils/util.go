@@ -283,9 +283,11 @@ func DeleteCounter(client *docker.Client) {
 }
 
 func DeleteM1(cname string) {
-	mesoslock.Lock()
-	delete(M1, cname)
-	mesoslock.Unlock()
+	if _, ok := getCnames()[cname]; !ok {
+		mesoslock.Lock()
+		delete(M1, cname)
+		mesoslock.Unlock()
+	}
 }
 
 func ReceiveContainer(container *docker.Container) {
