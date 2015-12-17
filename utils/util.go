@@ -23,15 +23,17 @@ const (
 	countFile = "/tmp/logspout/logspout.json"
 )
 
-var UUID string
-var M1 map[string]string
-var IP string
-var Hostname string
-var UserId string
-var ClusterId string
-var counter map[string]int64
-var counterlock sync.Mutex
-var mesoslock sync.Mutex
+var (
+	UUID        string
+	M1          map[string]string
+	IP          string
+	Hostname    string
+	UserId      string
+	ClusterId   string
+	counter     map[string]int64
+	counterlock sync.Mutex
+	mesoslock   sync.Mutex
+)
 
 func getPort(ports string) string {
 	reg := regexp.MustCompile("\\[|\\]")
@@ -68,8 +70,8 @@ type Message struct {
 }
 
 func init() {
-	counterlock = sync.Mutex{}
-	mesoslock = sync.Mutex{}
+	counterlock, mesoslock = sync.Mutex{}, sync.Mutex{}
+	M1 = make(map[string]string)
 	loadCounter()
 	UUID = os.Getenv("HOST_ID")
 	if UUID == "" {
