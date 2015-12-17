@@ -31,6 +31,7 @@ var UserId string
 var ClusterId string
 var counter map[string]int64
 var counterlock sync.Mutex
+var mesoslock sync.Mutex
 
 func getPort(ports string) string {
 	reg := regexp.MustCompile("\\[|\\]")
@@ -68,6 +69,7 @@ type Message struct {
 
 func init() {
 	counterlock = sync.Mutex{}
+	mesoslock = sync.Mutex{}
 	loadCounter()
 	UUID = os.Getenv("HOST_ID")
 	if UUID == "" {
@@ -90,12 +92,11 @@ func init() {
 }
 
 func Run() {
-	mesoslock := &sync.Mutex{}
 	timer := time.NewTicker(5 * time.Second)
 	for {
 		select {
 		case <-timer.C:
-			getMesosInfo(mesoslock)
+			//getMesosInfo(mesoslock)
 			persistenCounter()
 		}
 	}
@@ -278,5 +279,34 @@ func DeleteCounter(client *docker.Client) {
 			delete(counter, k)
 		}
 		counterlock.Unlock()
+	}
+}
+
+func DeleteM1(cname string) {
+	mesoslock.Lock()
+	delete(M1, cname)
+	mesoslock.Unlock()
+}
+
+func ReceiveContainer(container *docker.Container) {
+	env := container.Config.Env
+	appName := ""
+	taskId := ""
+	ports := ""
+	if len(env) > 0 {
+		for _, e := range env {
+			if strings.Contains(e, "MARATHON_APP_ID=/") {
+				appName = strings.Split(e, "=/")[1]
+			} else if strings.Contains(e, "MESOS_TASK_ID=") {
+				taskId = strings.Split(e, "=")[1]
+			} else if strings.Contains(e, "PORTS=") {
+				ports = strings.Split(e, "=")[1]
+			}
+		}
+		if appName != "" && taskId != "" && ports != "" {
+			mesoslock.Lock()
+			M1[container.Name] = appName + " " + taskId + " " + "[" + ports + "]"
+			mesoslock.Unlock()
+		}
 	}
 }

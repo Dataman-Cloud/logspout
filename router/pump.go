@@ -113,6 +113,12 @@ func (p *LogsPump) Run() error {
 			go p.pumpLogs(event, true)
 		case "die":
 			go p.update(event)
+
+			utils.DeleteCounter(p.client)
+			pump1, pumping1 := p.pumps[normalID(event.ID)]
+			if pumping1 {
+				utils.DeleteM1(pump1.container.Name)
+			}
 		}
 	}
 	return errors.New("docker event stream closed")
@@ -168,7 +174,6 @@ func (p *LogsPump) update(event *docker.APIEvents) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	pump, pumping := p.pumps[normalID(event.ID)]
-	utils.DeleteCounter(p.client)
 	if pumping {
 		for r, _ := range p.routes {
 			select {
@@ -263,6 +268,7 @@ func newContainerPump(container *docker.Container, stdout, stderr io.Reader) *co
 	}
 	go pump("stdout", stdout)
 	go pump("stderr", stderr)
+	utils.ReceiveContainer(container)
 	return cp
 }
 
