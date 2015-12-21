@@ -212,7 +212,8 @@ func getCnames() map[string]string {
 func SendMessage(cn, msg string, d *docker.Container) string {
 	counter[d.ID]++
 	t := time.Now()
-	timestr := t.Format("2006-01-02T15:04:05.895+08:00")
+	//timestr := t.Format("2006-01-02T15:04:05.895+08:00")
+	timestr := t.Format(time.RFC3339Nano)
 	logmsg := timestr + " " +
 		UserId + " " +
 		fmt.Sprint(counter[d.ID]) + " " +
