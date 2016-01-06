@@ -3,6 +3,7 @@ package raw
 import (
 	"bytes"
 	"errors"
+	"github.com/Jeffail/gabs"
 	log "github.com/cihub/seelog"
 	"net"
 	"os"
@@ -58,6 +59,7 @@ type RawAdapter struct {
 }
 
 func (a *RawAdapter) Stream(logstream chan *router.Message) {
+	msg := gabs.New()
 	for message := range logstream {
 		buf := new(bytes.Buffer)
 		err := a.tmpl.Execute(buf, message)
@@ -67,8 +69,10 @@ func (a *RawAdapter) Stream(logstream chan *router.Message) {
 		}
 
 		if cn := utils.M1[message.Container.Name]; cn != "" {
-			logmsg := utils.SendMessage(cn, buf.String(), message.Container)
-			_, err = connection.Write([]byte(logmsg))
+			//logmsg := utils.SendMessage(cn, buf.String(), message.Container)
+			//_, err = connection.Write([]byte(logmsg))
+			utils.SendMessage(cn, buf.String(), message.Container.ID, msg)
+			_, err = connection.Write(append([]byte(msg.String()), '\n'))
 			if err != nil {
 				log.Error("raw:", err, reflect.TypeOf(a.conn).String())
 				/*if reflect.TypeOf(a.conn).String() != "*net.TCPConn"{

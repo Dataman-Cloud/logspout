@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/Jeffail/gabs"
 	log "github.com/cihub/seelog"
 	"github.com/fsouza/go-dockerclient"

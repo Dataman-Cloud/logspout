@@ -3,6 +3,7 @@ package kafkaraw
 import (
 	"bytes"
 	"errors"
+	"github.com/Jeffail/gabs"
 	log "github.com/cihub/seelog"
 	"os"
 	"text/template"
@@ -64,6 +65,7 @@ type RawAdapter struct {
 }
 
 func (a *RawAdapter) Stream(logstream chan *router.Message) {
+	msg := gabs.New()
 	for message := range logstream {
 		buf := new(bytes.Buffer)
 		err := a.tmpl.Execute(buf, message)
@@ -72,8 +74,9 @@ func (a *RawAdapter) Stream(logstream chan *router.Message) {
 			return
 		}
 		if cn := utils.M1[message.Container.Name]; cn != "" {
-			logmsg := utils.SendMessage(cn, buf.String(), message.Container)
-			msg := &kafka.ProducerMessage{Topic: topic, Value: kafka.StringEncoder(logmsg)}
+			utils.SendMessage(cn, buf.String(), message.Container.ID, msg)
+			//logmsg := utils.SendMessage(cn, buf.String(), message.Container)
+			msg := &kafka.ProducerMessage{Topic: topic, Value: kafka.StringEncoder(msg.String())}
 			partition, offset, err := a.producer.SendMessage(msg)
 			_, _, _ = partition, offset, err
 		}
