@@ -254,7 +254,7 @@ func newContainerPump(container *docker.Container, stdout, stderr io.Reader) *co
 			line, err := buf.ReadString('\n')
 			if err != nil {
 				if err != io.EOF {
-					debug("pump:", normalID(container.ID), source+":", err)
+					debug("pump-----:", normalID(container.ID), source+":", err)
 				}
 				return
 			}
