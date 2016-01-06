@@ -210,13 +210,13 @@ func getCnames() map[string]string {
 }
 
 func SendMessage(cn, msg string, d *docker.Container) string {
-	counter[d.ID]++
+	counter[ShortID(d.ID)]++
 	t := time.Now()
 	//timestr := t.Format("2006-01-02T15:04:05.895+08:00")
 	timestr := t.Format(time.RFC3339Nano)
 	logmsg := timestr + " " +
 		UserId + " " +
-		fmt.Sprint(counter[d.ID]) + " " +
+		fmt.Sprint(counter[ShortID(d.ID)]) + " " +
 		ClusterId + " " +
 		UUID + " " +
 		IP + " " +
@@ -236,7 +236,7 @@ func loadCounter() {
 			if err == nil {
 				for k, v := range m {
 					if reflect.TypeOf(v.Data()).String() == "float64" {
-						counter[k] = int64(v.Data().(float64))
+						counter[ShortID(k)] = int64(v.Data().(float64))
 					}
 				}
 				log.Debug("load container counter: ", json)
@@ -271,7 +271,7 @@ func DeleteCounter(client *docker.Client) {
 	if err == nil {
 		copycounter := counter
 		for _, container := range containers {
-			_, ok := copycounter[container.ID]
+			_, ok := copycounter[ShortID(container.ID)]
 			if ok {
 				delete(copycounter, container.ID)
 			}
@@ -314,4 +314,11 @@ func ReceiveContainer(container *docker.Container) {
 			mesoslock.Unlock()
 		}
 	}
+}
+
+func ShortID(id string) string {
+	if len(id) > 12 {
+		return id[:12]
+	}
+	return id
 }
